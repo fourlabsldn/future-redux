@@ -1,24 +1,36 @@
-import { ADD_TODO, DISPATCH_IN_MIDDLE, THROW_ERROR } from './actionTypes'
+import {
+  Future
+} from 'ramda-fantasy'
+import {
+  ADD_TODO,
+  DISPATCH_IN_MIDDLE,
+  THROW_ERROR
+} from './actionTypes'
 
 
 function id(state = []) {
   return state.reduce((result, item) => (
-    item.id > result ? item.id : result
-  ), 0) + 1
+      item.id > result ? item.id : result
+    ), 0) + 1
 }
 
 export function todos(state = [], action) {
   switch (action.type) {
     case ADD_TODO:
-      return [ 
-        ...state, 
-        {
-          id: id(state),
-          text: action.text
-        }
+      return [
+        [
+          ...state, {
+            id: id(state),
+            text: action.text
+          }
+        ],
+        Future.reject()
       ]
     default:
-      return state
+      return [
+        state,
+        Future.reject()
+      ]
   }
 }
 
@@ -26,13 +38,14 @@ export function todosReverse(state = [], action) {
   switch (action.type) {
     case ADD_TODO:
       return [
-        {
+        [{
           id: id(state),
           text: action.text
-        }, ...state
+        }, ...state],
+        Future.reject()
       ]
     default:
-      return state
+      return [state, Future.reject()]
   }
 }
 
@@ -40,9 +53,9 @@ export function dispatchInTheMiddleOfReducer(state = [], action) {
   switch (action.type) {
     case DISPATCH_IN_MIDDLE:
       action.boundDispatchFn()
-      return state
+      return [state, Future.reject()]
     default:
-      return state
+      return [state, Future.reject()]
   }
 }
 
@@ -51,6 +64,6 @@ export function errorThrowingReducer(state = [], action) {
     case THROW_ERROR:
       throw new Error()
     default:
-      return state
+      return [state, Future.reject()]
   }
 }

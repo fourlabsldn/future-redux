@@ -7,14 +7,14 @@ describe('Utils', () => {
     it('returns a composite reducer that maps the state keys to given reducers', () => {
       const reducer = combineReducers({
         counter: (state = 0, action) =>
-        action.type === 'increment' ? state + 1 : state,
+        action.type === 'increment' ? [state + 1] : [state],
         stack: (state = [], action) =>
-        action.type === 'push' ? [ ...state, action.value ] : state
+        action.type === 'push' ? [[ ...state, action.value ]] : [state]
       })
 
-      const s1 = reducer({}, { type: 'increment' })
+      const [s1] = reducer({}, { type: 'increment' })
       expect(s1).toEqual({ counter: 1, stack: [] })
-      const s2 = reducer(s1, { type: 'push', value: 'a' })
+      const [s2] = reducer(s1, { type: 'push', value: 'a' })
       expect(s2).toEqual({ counter: 1, stack: [ 'a' ] })
     })
 
@@ -23,11 +23,11 @@ describe('Utils', () => {
         fake: true,
         broken: 'string',
         another: { nested: 'object' },
-        stack: (state = []) => state
+        stack: (state = []) => [state]
       })
 
       expect(
-        Object.keys(reducer({ }, { type: 'push' }))
+        Object.keys(reducer({}, { type: 'push' })[0])
       ).toEqual([ 'stack' ])
     })
 
@@ -57,15 +57,15 @@ describe('Utils', () => {
         counter(state = 0, action) {
           switch (action && action.type) {
             case 'increment':
-              return state + 1
+              return [state + 1]
             case 'decrement':
-              return state - 1
+              return [state - 1]
             case 'whatever':
             case null:
             case undefined:
-              return undefined
+              return [undefined]
             default:
-              return state
+              return [state]
           }
         }
       })
@@ -123,53 +123,53 @@ describe('Utils', () => {
         counter(state = 0, action) {
           switch (action.type) {
             case increment:
-              return state + 1
+              return [state + 1]
             default:
-              return state
+              return [state]
           }
         }
       })
 
-      expect(reducer({ counter: 0 }, { type: increment }).counter).toEqual(1)
+      expect(reducer({ counter: 0 }, { type: increment })[0].counter).toEqual(1)
     })
 
     it('maintains referential equality if the reducers it is combining do', () => {
       const reducer = combineReducers({
         child1(state = { }) {
-          return state
+          return [state]
         },
         child2(state = { }) {
-          return state
+          return [state]
         },
         child3(state = { }) {
-          return state
+          return [state]
         }
       })
 
-      const initialState = reducer(undefined, '@@INIT')
-      expect(reducer(initialState, { type: 'FOO' })).toBe(initialState)
+      const initialState = reducer(undefined, '@@INIT')[0]
+      expect(reducer(initialState, { type: 'FOO' })[0]).toBe(initialState)
     })
 
     it('does not have referential equality if one of the reducers changes something', () => {
       const reducer = combineReducers({
         child1(state = { }) {
-          return state
+          return [state]
         },
         child2(state = { count: 0 }, action) {
           switch (action.type) {
             case 'increment':
-              return { count: state.count + 1 }
+              return [{ count: state.count + 1 }]
             default:
-              return state
+              return [state]
           }
         },
         child3(state = { }) {
-          return state
+          return [state]
         }
       })
 
       const initialState = reducer(undefined, '@@INIT')
-      expect(reducer(initialState, { type: 'increment' })).not.toBe(initialState)
+      expect(reducer(initialState, { type: 'increment' })[0]).not.toBe(initialState)
     })
 
     it('throws an error on first call if a reducer attempts to handle a private action', () => {
@@ -214,10 +214,10 @@ describe('Utils', () => {
 
       const reducer = combineReducers({
         foo(state = { bar: 1 }) {
-          return state
+          return [state]
         },
         baz(state = { qux: 3 }) {
-          return state
+          return [state]
         }
       })
 
@@ -272,8 +272,8 @@ describe('Utils', () => {
       const spy = jest.fn()
       console.error = spy
 
-      const foo = (state = { foo: 1 }) => state
-      const bar = (state = { bar: 2 }) => state
+      const foo = (state = { foo: 1 }) => [state]
+      const bar = (state = { bar: 2 }) => [state]
 
       expect(spy.mock.calls.length).toBe(0)
       const reducer = combineReducers({ foo, bar })

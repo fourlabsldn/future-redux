@@ -30,7 +30,7 @@ describe('createStore', () => {
     ).toThrow()
 
     expect(() =>
-      createStore(() => {})
+      createStore(() => [{}])
     ).not.toThrow()
   })
 
@@ -430,11 +430,11 @@ describe('createStore', () => {
 
   it('handles nested dispatches gracefully', () => {
     function foo(state = 0, action) {
-      return action.type === 'foo' ? 1 : state
+      return action.type === 'foo' ? [1] : [state]
     }
 
     function bar(state = 0, action) {
-      return action.type === 'bar' ? 2 : state
+      return action.type === 'bar' ? [2] : [state]
     }
 
     const store = createStore(combineReducers({ foo, bar }))
@@ -597,7 +597,7 @@ describe('createStore', () => {
     ).toThrow('Expected the nextReducer to be a function.')
 
     expect(() =>
-      store.replaceReducer(() => {})
+      store.replaceReducer(() => [{}])
     ).not.toThrow()
   })
 
@@ -623,19 +623,19 @@ describe('createStore', () => {
 
   describe('Symbol.observable interop point', () => {
     it('should exist', () => {
-      const store = createStore(() => {})
+      const store = createStore(() => [{}])
       expect(typeof store[$$observable]).toBe('function')
     })
 
     describe('returned value', () => {
       it('should be subscribable', () => {
-        const store = createStore(() => {})
+        const store = createStore(() => [{}])
         const obs = store[$$observable]()
         expect(typeof obs.subscribe).toBe('function')
       })
 
       it('should throw a TypeError if an observer object is not supplied to subscribe', () => {
-        const store = createStore(() => {})
+        const store = createStore(() => [{}])
         const obs = store[$$observable]()
 
         expect(function () {
@@ -643,7 +643,7 @@ describe('createStore', () => {
         }).toThrow()
 
         expect(function () {
-          obs.subscribe(() => {})
+          obs.subscribe(() => [{}] )
         }).toThrow()
 
         expect(function () {
@@ -652,7 +652,7 @@ describe('createStore', () => {
       })
 
       it('should return a subscription object when subscribed', () => {
-        const store = createStore(() => {})
+        const store = createStore(() => [{}])
         const obs = store[$$observable]()
         const sub = obs.subscribe({})
         expect(typeof sub.unsubscribe).toBe('function')
@@ -661,11 +661,11 @@ describe('createStore', () => {
 
     it('should pass an integration test with no unsubscribe', () => {
       function foo(state = 0, action) {
-        return action.type === 'foo' ? 1 : state
+        return action.type === 'foo' ? [1] : [state]
       }
 
       function bar(state = 0, action) {
-        return action.type === 'bar' ? 2 : state
+        return action.type === 'bar' ? [2] : [state]
       }
 
       const store = createStore(combineReducers({ foo, bar }))
@@ -686,11 +686,11 @@ describe('createStore', () => {
 
     it('should pass an integration test with an unsubscribe', () => {
       function foo(state = 0, action) {
-        return action.type === 'foo' ? 1 : state
+        return action.type === 'foo' ? [1] : [state]
       }
 
       function bar(state = 0, action) {
-        return action.type === 'bar' ? 2 : state
+        return action.type === 'bar' ? [2] : [state]
       }
 
       const store = createStore(combineReducers({ foo, bar }))
@@ -712,11 +712,11 @@ describe('createStore', () => {
 
     it('should pass an integration test with a common library (RxJS)', () => {
       function foo(state = 0, action) {
-        return action.type === 'foo' ? 1 : state
+        return action.type === 'foo' ? [1] : [state]
       }
 
       function bar(state = 0, action) {
-        return action.type === 'bar' ? 2 : state
+        return action.type === 'bar' ? [2] : [state]
       }
 
       const store = createStore(combineReducers({ foo, bar }))

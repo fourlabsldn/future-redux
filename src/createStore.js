@@ -167,7 +167,11 @@ export default function createStore(reducer, preloadedState, enhancer) {
 
     try {
       isDispatching = true
-      currentState = currentReducer(currentState, action)
+       const outcomeTuple = currentReducer(currentState, action)
+       currentState = outcomeTuple[0]
+       const futureAction = outcomeTuple[1]
+
+      setImmediate(() => futureAction && futureAction.fork(() => null, dispatch))
     } finally {
       isDispatching = false
     }

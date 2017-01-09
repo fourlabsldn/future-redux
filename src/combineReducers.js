@@ -1,3 +1,4 @@
+import { Future } from "ramda-fantasy"
 import { ActionTypes } from './createStore'
 import isPlainObject from 'lodash/isPlainObject'
 import warning from './utils/warning'
@@ -143,11 +144,18 @@ export default function combineReducers(reducers) {
 
     let hasChanged = false
     const nextState = {}
+    const asyncUpdates = [];
     for (let i = 0; i < finalReducerKeys.length; i++) {
       const key = finalReducerKeys[i]
       const reducer = finalReducers[key]
       const previousStateForKey = state[key]
-      const nextStateForKey = reducer(previousStateForKey, action)
+      const outcomeTuple = reducer(previousStateForKey, action)
+      const nextStateForKey = outcomeTuple[0]
+
+      if (outcomeTuple[1]) {
+        asyncUpdates.push(outcomeTuple[1])
+      }
+
       if (typeof nextStateForKey === 'undefined') {
         const errorMessage = getUndefinedStateErrorMessage(key, action)
         throw new Error(errorMessage)
@@ -155,6 +163,11 @@ export default function combineReducers(reducers) {
       nextState[key] = nextStateForKey
       hasChanged = hasChanged || nextStateForKey !== previousStateForKey
     }
-    return hasChanged ? nextState : state
+    return [
+      hasChanged ? nextState : state,
+      new Future((rej, resolve) => {
+        asyncUpdates.map(t => t.fork(() => null, resolve))
+      })
+    ]
   }
 }
