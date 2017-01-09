@@ -1,3 +1,5 @@
+import isFunction from 'lodash/isFunction'
+import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
 import $$observable from 'symbol-observable'
 
@@ -165,15 +167,30 @@ export default function createStore(reducer, preloadedState, enhancer) {
       throw new Error('Reducers may not dispatch actions.')
     }
 
+    let outcomeTuple;
     try {
       isDispatching = true
-       const outcomeTuple = currentReducer(currentState, action)
-       currentState = outcomeTuple[0]
-       const futureAction = outcomeTuple[1]
+      outcomeTuple = currentReducer(currentState, action)
 
-      setImmediate(() => futureAction && futureAction.fork(() => null, dispatch))
     } finally {
       isDispatching = false
+    }
+
+    if (!isArray(outcomeTuple)) {
+      throw new Error('Reducers must return an array with the state as the first element.');
+    }
+
+    if (outcomeTuple[1] && !(outcomeTuple[1].fork && isFunction(outcomeTuple[1].fork))) {
+      throw new Error('If present, the second tuple value must be a Future object with a `fork` method.')
+    }
+
+    currentState = outcomeTuple[0]
+    const futureAction = outcomeTuple[1]
+
+    if (futureAction) {
+      setImmediate(
+        () => futureAction.fork(() => null, dispatch)
+      )
     }
 
     const listeners = currentListeners = nextListeners
