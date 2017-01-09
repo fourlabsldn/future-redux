@@ -7,7 +7,7 @@ In Redux your reducer returns a state object. This is very straight forward, but
 
 In Future Redux your update function returns an array containing at most two items:
   - The first is your state object
-  - The second one is optional and is a `[Future](https://github.com/ramda/ramda-fantasy/blob/master/docs/Future.md)` object, which is similar to a Promise.
+  - The second one is optional and is a [`Future`](https://github.com/ramda/ramda-fantasy/blob/master/docs/Future.md) object, which is similar to a Promise.
 
 The resolve function of the future is equivalent to store.dispatch. You can use it like this:
 
