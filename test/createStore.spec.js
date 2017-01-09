@@ -1,3 +1,4 @@
+import { Future } from 'ramda-fantasy'
 import { createStore, combineReducers } from '../src/index'
 import { addTodo, dispatchInMiddle, throwError, unknownAction } from './helpers/actionCreators'
 import * as reducers from './helpers/reducers'
@@ -733,5 +734,75 @@ describe('createStore', () => {
 
       expect(results).toEqual([ { foo: 0, bar: 0, fromRx: true }, { foo: 1, bar: 0, fromRx: true } ])
     })
+  })
+
+  it('throws if second tuple parameter is not a Future', () => {
+    function foo(state, action) {
+      return [state, {}]
+    }
+
+    expect(
+      () =>  createStore(foo)
+    ).toThrow()
+  })
+
+  it('Does not throw if second tuple parameter is a Future', () => {
+    function foo(state, action) {
+      return [state, Future.of(2)]
+    }
+
+
+    expect(() => {
+      const store = createStore(foo)
+      store.dispatch({ type: "action" })
+    }).not.toThrow()
+  })
+
+  it('Executes async actions', (done) => {
+    let endChecks;
+
+    function foo(state, action) {
+      return [
+        state,
+        new Future((reject, resolve) => setImmediate(() => {
+          endChecks(resolve);
+        }))
+      ]
+    }
+
+    const store = createStore(foo)
+    endChecks = resolveFunction => {
+      expect(typeof resolveFunction).toEqual("function")
+      done();
+    }
+    store.dispatch({ type: "action" })
+  })
+
+  it('Async actions change the state', (done) => {
+    function foo(state, action) {
+      switch(action.type) {
+      case "START":
+        return [
+          state,
+          new Future((reject, resolve) => setImmediate(() => {
+            resolve({ type: "CHANGE" });
+          }))
+        ]
+      case "CHANGE":
+        return [2]
+      case '@@redux/INIT':
+        return [state]
+      default:
+        throw new Error("invalid type", action.type)
+      }
+    }
+
+    const store = createStore(foo)
+    store.dispatch({ type: "START" })
+
+    setTimeout(() => {
+      expect(store.getState()).toEqual(2)
+      done();
+    }, 50);
   })
 })
