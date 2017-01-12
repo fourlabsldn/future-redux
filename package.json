@@ -1,6 +1,6 @@
 {
-  "name": "redux",
-  "version": "3.6.0",
+  "name": "future-redux",
+  "version": "0.1.0",
   "description": "Predictable state container for JavaScript apps",
   "browser": "dist/redux.js",
   "main": "lib/index.js",
@@ -40,7 +40,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/reactjs/redux.git"
+    "url": "git+https://github.com/reactjs/redux.git"
   },
   "keywords": [
     "redux",
@@ -132,5 +132,11 @@
   },
   "jest": {
     "testRegex": "(/test/.*\\.spec.js)$"
-  }
+  },
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "test"
+  },
+  "author": ""
 }

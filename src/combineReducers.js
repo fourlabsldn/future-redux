@@ -1,7 +1,9 @@
-import { Future } from "ramda-fantasy"
+import R from "ramda-fantasy"
 import { ActionTypes } from './createStore'
 import isPlainObject from 'lodash/isPlainObject'
 import warning from './utils/warning'
+
+const Future = R.Future;
 
 const NODE_ENV = typeof process !== 'undefined' ? process.env.NODE_ENV : 'development'
 
